@@ -100,7 +100,8 @@ namespace hexandbox {
 
         private static void DrawTile(int x, int y, int spriteId) {
             SpriteTextureDTO sprite = ResourceManager.GetTexture(spriteId);
-            DrawQuad(sceneXtoScreenX(0), sceneYtoScreenY(0), sceneXtoScreenX(100), sceneYtoScreenY(100), sprite.x0, sprite.y0, sprite.x1, sprite.y1);
+            DrawQuad(-0.6f, -0.4f, 1.2f, 0.8f, sprite.x0, sprite.y0, sprite.x1, sprite.y1);
+            //DrawQuad(sceneXtoScreenX(0), sceneYtoScreenY(0), sceneXtoScreenX(100), sceneYtoScreenY(100), sprite.x0, sprite.y0, sprite.x1, sprite.y1);
         }
 
         private static void DrawQuad(float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2) {
