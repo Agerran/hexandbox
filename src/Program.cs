@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -14,11 +15,17 @@ namespace hexandbox {
         static Bitmap bitmap = new Bitmap("../data/Tileset_Hexagonal_PointyTop_60x52_60x80.png");
         static int texture;
 
+        public static TmxLayerTile GetTile(ref TmxMap tmxmap, int x, int y, int layer) {
+            return tmxmap.Layers[layer].Tiles[x + y * tmxmap.Width];
+        }
+
         [STAThread]
         public static void Main() {
             using (var game = new GameWindow()) {
 
                 var Map = new TmxMap("..\\data\\map.tmx");
+                var tile = GetTile(ref Map, 3, 3, 0);
+
 
                 game.Load += (sender, e) => {
                     // setup settings, load textures, sounds
@@ -71,14 +78,11 @@ namespace hexandbox {
 
                     GL.MatrixMode(MatrixMode.Modelview);
                     GL.LoadIdentity();
-                    GL.BindTexture(TextureTarget.Texture2D, texture);
 
+                    GL.BindTexture(TextureTarget.Texture2D, texture);
                     GL.Begin(PrimitiveType.Quads);
 
-                    GL.TexCoord2(0.0f, 1.0f); GL.Vertex2(-0.6f, -0.4f);
-                    GL.TexCoord2(1.0f, 1.0f); GL.Vertex2(0.6f, -0.4f);
-                    GL.TexCoord2(1.0f, 0.0f); GL.Vertex2(0.6f, 0.4f);
-                    GL.TexCoord2(0.0f, 0.0f); GL.Vertex2(-0.6f, 0.4f);
+                    DrawTile(0, 0, 0);
 
                     GL.End();
 
@@ -89,6 +93,17 @@ namespace hexandbox {
                 // Run the game at 60 updates per second
                 game.Run(60.0);
             }
+        }
+
+        private static void DrawTile(int x, int y, int sprite) {
+            DrawQuad(-0.6f, -0.4f, 1.2f, 0.8f, 0.0f, 0.0f, 1.0f, 1.0f);
+        }
+
+        private static void DrawQuad(float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2) {
+            GL.TexCoord2(tx1, ty2); GL.Vertex2(x, y);
+            GL.TexCoord2(tx2, ty2); GL.Vertex2(x + width, y);
+            GL.TexCoord2(tx2, ty1); GL.Vertex2(x + width, y + height);
+            GL.TexCoord2(tx1, ty1); GL.Vertex2(x, y + height);
         }
     }
 }
