@@ -74,6 +74,8 @@ namespace hexandbox {
                     GL.MatrixMode(MatrixMode.Modelview);
                     GL.LoadIdentity();
 
+                    GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+                    GL.Enable(EnableCap.Blend);
                     GL.BindTexture(TextureTarget.Texture2D, texture);
                     GL.Begin(PrimitiveType.Quads);
 
