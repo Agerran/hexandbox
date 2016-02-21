@@ -7,25 +7,24 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using TiledSharp;
+using hexandbox;
 
 namespace hexandbox {
-    class MyApplication {
-        
+    static class MyApplication {
 
         static Bitmap bitmap = new Bitmap("../data/Tileset_Hexagonal_PointyTop_60x52_60x80.png");
         static int texture;
 
-        public static TmxLayerTile GetTile(ref TmxMap tmxmap, int x, int y, int layer) {
-            return tmxmap.Layers[layer].Tiles[x + y * tmxmap.Width];
-        }
+        static GameWindow game;
 
         [STAThread]
         public static void Main() {
-            using (var game = new GameWindow()) {
+            using (game = new GameWindow()) {
 
                 var Map = new TmxMap("..\\data\\map.tmx");
-                var tile = GetTile(ref Map, 3, 3, 0);
+                var tile = hexandbox.ResourceManager.GetTile(ref Map, 3, 3, 0);
 
+                hexandbox.ResourceManager.GetTexture(1);
 
                 game.Load += (sender, e) => {
                     // setup settings, load textures, sounds
@@ -63,11 +62,7 @@ namespace hexandbox {
                 };
 
                 game.RenderFrame += (sender, e) => {
-                
-
-
-
-        // render graphics
+                    // render graphics
                     GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
                     GL.MatrixMode(MatrixMode.Projection);
@@ -82,7 +77,7 @@ namespace hexandbox {
                     GL.BindTexture(TextureTarget.Texture2D, texture);
                     GL.Begin(PrimitiveType.Quads);
 
-                    DrawTile(0, 0, 0);
+                    DrawTile(0, 0, 6);
 
                     GL.End();
 
@@ -95,8 +90,17 @@ namespace hexandbox {
             }
         }
 
-        private static void DrawTile(int x, int y, int sprite) {
-            DrawQuad(-0.6f, -0.4f, 1.2f, 0.8f, 0.0f, 0.0f, 1.0f, 1.0f);
+        private static float sceneXtoScreenX(int x) {
+            return 2.0f * (float)x / game.Width - 1.0f;
+        }
+
+        private static float sceneYtoScreenY(int y) {
+            return 2.0f * (float)y / game.Height - 1.0f;
+        }
+
+        private static void DrawTile(int x, int y, int spriteId) {
+            SpriteTextureDTO sprite = ResourceManager.GetTexture(spriteId);
+            DrawQuad(sceneXtoScreenX(0), sceneYtoScreenY(0), sceneXtoScreenX(100), sceneYtoScreenY(100), sprite.x0, sprite.y0, sprite.x1, sprite.y1);
         }
 
         private static void DrawQuad(float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2) {
@@ -105,5 +109,48 @@ namespace hexandbox {
             GL.TexCoord2(tx2, ty1); GL.Vertex2(x + width, y + height);
             GL.TexCoord2(tx1, ty1); GL.Vertex2(x, y + height);
         }
+    }
+
+    public class SpriteTextureDTO {
+
+        public float x0 { get; set; }
+        public float x1 { get; set; }
+        public float y0 { get; set; }
+        public float y1 { get; set; }
+
+        public SpriteTextureDTO() { }
+
+        public SpriteTextureDTO(float _x0, float _y0, float _x1, float _y1) {
+            x0 = _x0;
+            x1 = _x1;
+            y0 = _y0;
+            y1 = _y1;
+        }
+    }
+
+    public static class ResourceManager {
+        private static TmxMap _tmxMap = new TmxMap("..\\data\\map.tmx");
+
+
+        public static TmxLayerTile GetTile(ref TmxMap tmxmap, int x, int y, int layer) {
+            return tmxmap.Layers[layer].Tiles[x + y * tmxmap.Width];
+        }
+
+        public static SpriteTextureDTO GetTexture(int gId) {
+
+            var tileset = _tmxMap.Tilesets.First();
+
+            var x = gId % tileset.Columns.Value;
+            var y = gId / tileset.Columns.Value;
+
+            var imageHeight = tileset.Image.Height.Value;
+            var imageWidth = tileset.Image.Width.Value;
+
+            var dy = (float)tileset.TileHeight / imageHeight;
+            var dx = (float)tileset.TileWidth / imageWidth;
+
+            return new SpriteTextureDTO(x * dx,  y*dy, (x + 1) * dx, (y+1)*dy );
+        }
+
     }
 }
