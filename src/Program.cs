@@ -77,7 +77,13 @@ namespace hexandbox {
                     GL.BindTexture(TextureTarget.Texture2D, texture);
                     GL.Begin(PrimitiveType.Quads);
 
-                    DrawTile(0, 0, 6);
+                    for (int iy = 0; iy < Map.Height; iy++) {
+                        int dX = iy % 2 == 0 ? 0 : Map.TileWidth / 2;
+                        for (int ix = 0; ix < Map.Width; ix++) {
+                            DrawTile(dX + ix * Map.TileWidth, iy * Map.TileHeight, Map.TileWidth, Map.TileHeight, ResourceManager.GetTile(ref Map, ix, iy, 0).Gid);
+                        }
+                    }
+                    
 
                     GL.End();
 
@@ -91,24 +97,25 @@ namespace hexandbox {
         }
 
         private static float sceneXtoScreenX(int x) {
-            return 2.0f * (float)x / game.Width - 1.0f;
+            
+            return 2 * (float)x / (float)game.Width - 1.0f;
         }
 
         private static float sceneYtoScreenY(int y) {
-            return 2.0f * (float)y / game.Height - 1.0f;
+            return 1.0f - 2 * (float)y / (float)game.Height;
         }
 
-        private static void DrawTile(int x, int y, int spriteId) {
+        private static void DrawTile(int x, int y, int width, int height, int spriteId) {
             SpriteTextureDTO sprite = ResourceManager.GetTexture(spriteId);
-            DrawQuad(-0.6f, -0.4f, 1.2f, 0.8f, sprite.x0, sprite.y0, sprite.x1, sprite.y1);
+            DrawQuad(x, y, width, height, sprite.x0, sprite.y0, sprite.x1, sprite.y1);
             //DrawQuad(sceneXtoScreenX(0), sceneYtoScreenY(0), sceneXtoScreenX(100), sceneYtoScreenY(100), sprite.x0, sprite.y0, sprite.x1, sprite.y1);
         }
 
-        private static void DrawQuad(float x, float y, float width, float height, float tx1, float ty1, float tx2, float ty2) {
-            GL.TexCoord2(tx1, ty2); GL.Vertex2(x, y);
-            GL.TexCoord2(tx2, ty2); GL.Vertex2(x + width, y);
-            GL.TexCoord2(tx2, ty1); GL.Vertex2(x + width, y + height);
-            GL.TexCoord2(tx1, ty1); GL.Vertex2(x, y + height);
+        private static void DrawQuad(int x, int y, int width, int height, float tx1, float ty1, float tx2, float ty2) {
+            GL.TexCoord2(tx1, ty2); GL.Vertex2(sceneXtoScreenX(x), sceneYtoScreenY(y + height));
+            GL.TexCoord2(tx2, ty2); GL.Vertex2(sceneXtoScreenX(x + width), sceneYtoScreenY(y + height));
+            GL.TexCoord2(tx2, ty1); GL.Vertex2(sceneXtoScreenX(x + width), sceneYtoScreenY(y));
+            GL.TexCoord2(tx1, ty1); GL.Vertex2(sceneXtoScreenX(x), sceneYtoScreenY(y));
         }
     }
 
@@ -138,11 +145,11 @@ namespace hexandbox {
         }
 
         public static SpriteTextureDTO GetTexture(int gId) {
-
+            int tileId = gId - 1;
             var tileset = _tmxMap.Tilesets.First();
 
-            var x = gId % tileset.Columns.Value;
-            var y = gId / tileset.Columns.Value;
+            var x = tileId % tileset.Columns.Value;
+            var y = tileId / tileset.Columns.Value;
 
             var imageHeight = tileset.Image.Height.Value;
             var imageWidth = tileset.Image.Width.Value;
