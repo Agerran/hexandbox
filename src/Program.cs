@@ -5,6 +5,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using TiledSharp;
 
 namespace hexandbox {
     class MyApplication {
@@ -16,6 +17,9 @@ namespace hexandbox {
         [STAThread]
         public static void Main() {
             using (var game = new GameWindow()) {
+
+                var Map = new TmxMap("..\\data\\map.tmx");
+
                 game.Load += (sender, e) => {
                     // setup settings, load textures, sounds
                     game.VSync = VSyncMode.On;
