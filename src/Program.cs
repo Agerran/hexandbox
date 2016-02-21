@@ -21,11 +21,6 @@ namespace hexandbox {
         public static void Main() {
             using (game = new GameWindow()) {
 
-                var Map = new TmxMap("..\\data\\map.tmx");
-                var tile = hexandbox.ResourceManager.GetTile(ref Map, 3, 3, 0);
-
-                hexandbox.ResourceManager.GetTexture(1);
-
                 game.Load += (sender, e) => {
                     // setup settings, load textures, sounds
                     game.VSync = VSyncMode.On;
@@ -79,17 +74,17 @@ namespace hexandbox {
                     GL.BindTexture(TextureTarget.Texture2D, texture);
                     GL.Begin(PrimitiveType.Quads);
 
+                    var Map = ResourceManager.Map;
+
                     for (int iy = 0; iy < Map.Height; iy++) {
                         int dX = iy % 2 == 0 ? 0 : Map.TileWidth / 2;
                         for (int ix = 0; ix < Map.Width; ix++) {
-                            DrawTile(dX + ix * Map.TileWidth, iy * Map.TileHeight, Map.TileWidth, Map.TileHeight, ResourceManager.GetTile(ref Map, ix, iy, 0).Gid);
+                            DrawTile(dX + ix * Map.TileWidth, iy * Map.HexSideLength.Value, Map.TileWidth, Map.TileHeight, ResourceManager.GetTile(ix, iy, 0).Gid);
                         }
                     }
-                    
 
                     GL.End();
-
-
+                    
                     game.SwapBuffers();
                 };
 
@@ -121,46 +116,4 @@ namespace hexandbox {
         }
     }
 
-    public class SpriteTextureDTO {
-
-        public float x0 { get; set; }
-        public float x1 { get; set; }
-        public float y0 { get; set; }
-        public float y1 { get; set; }
-
-        public SpriteTextureDTO() { }
-
-        public SpriteTextureDTO(float _x0, float _y0, float _x1, float _y1) {
-            x0 = _x0;
-            x1 = _x1;
-            y0 = _y0;
-            y1 = _y1;
-        }
-    }
-
-    public static class ResourceManager {
-        private static TmxMap _tmxMap = new TmxMap("..\\data\\map.tmx");
-
-
-        public static TmxLayerTile GetTile(ref TmxMap tmxmap, int x, int y, int layer) {
-            return tmxmap.Layers[layer].Tiles[x + y * tmxmap.Width];
-        }
-
-        public static SpriteTextureDTO GetTexture(int gId) {
-            int tileId = gId - 1;
-            var tileset = _tmxMap.Tilesets.First();
-
-            var x = tileId % tileset.Columns.Value;
-            var y = tileId / tileset.Columns.Value;
-
-            var imageHeight = tileset.Image.Height.Value;
-            var imageWidth = tileset.Image.Width.Value;
-
-            var dy = (float)tileset.TileHeight / imageHeight;
-            var dx = (float)tileset.TileWidth / imageWidth;
-
-            return new SpriteTextureDTO(x * dx,  y*dy, (x + 1) * dx, (y+1)*dy );
-        }
-
-    }
 }
